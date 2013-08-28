@@ -4,15 +4,15 @@ from .models import Lifestream, Feed, Item
 
 
 class LifestreamModelAdmin(admin.ModelAdmin):
-	pass
+    pass
 
 
 class FeedModelAdmin(admin.ModelAdmin):
-	pass
+    pass
 
 
 class ItemModelAdmin(admin.ModelAdmin):
-	pass
+    pass
 
 
 admin.site.register(Lifestream, LifestreamModelAdmin)

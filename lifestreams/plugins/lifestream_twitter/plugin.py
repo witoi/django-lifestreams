@@ -3,7 +3,6 @@ from django.core.exceptions import ImproperlyConfigured
 
 import tweepy
 
-from lifestreams.utils import get_setting
 from lifestreams.plugins import BasePlugin
 from lifestreams.exceptions import FeedNotConfiguredException
 
@@ -19,6 +18,8 @@ if APP_NAME not in settings.INSTALLED_APPS:
 
 
 class TweetsHandler(object):
+    '''
+    '''
     def __init__(self, consumer_key, consumer_secret, access_token, access_token_secret, screen_name):
         auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
         auth.set_access_token(access_token, access_token_secret)
@@ -31,18 +32,12 @@ class TweetsHandler(object):
 
 
 class TwitterPlugin(BasePlugin):
+    '''
+    '''
     def __init__(self, feed):
         super(TwitterPlugin, self).__init__(feed=feed)
-        consumer_key = get_setting('TWITTER_CONSUMER_KEY')
-        consumer_secret = get_setting('TWITTER_CONSUMER_SECRET')
-        access_token = get_setting('TWITTER_ACCESS_TOKEN')
-        access_token_secret = get_setting('TWITTER_ACCESS_TOKEN_SECRET')
-        screen_name = self.get_screen_name()
-        self.handler = TweetsHandler(consumer_key=consumer_key,
-                                     consumer_secret=consumer_secret,
-                                     access_token=access_token,
-                                     access_token_secret=access_token_secret,
-                                     screen_name=screen_name)
+        kwargs = self.get_handler_kwargs()
+        self.handler = TweetsHandler(**kwargs)
 
     def update(self):
         tweets = self.handler.update(**self.get_update_kwargs())
@@ -57,6 +52,18 @@ class TwitterPlugin(BasePlugin):
         itemtweet = ItemTweet(item=item, tweet_id=tweet.id)
         itemtweet.save()
 
+    def get_handler_kwargs(self):
+        try:
+            return {
+                'consumer_key': self.feed.twitter.consumer_key,
+                'consumer_secret': self.feed.twitter.consumer_secret,
+                'access_token': self.feed.twitter.access_token,
+                'access_token_secret': self.feed.twitter.access_token_secret,
+                'screen_name': self.feed.twitter.screen_name
+            }
+        except TwitterFeed.DoesNotExist:
+            raise FeedNotConfiguredException('Feed must create TwitterFeed for this plugin.')
+
     def get_update_kwargs(self):
         kwargs = {}
         last_id = self.get_last_id()
@@ -70,9 +77,3 @@ class TwitterPlugin(BasePlugin):
             return last_item.tweet.tweet_id
         except self.feed.items.model.DoesNotExist:
             pass
-
-    def get_screen_name(self):
-        try:
-            return self.feed.twitter.screen_name
-        except TwitterFeed.DoesNotExist:
-            raise FeedNotConfiguredException('Feed must create TwitterFeed for this plugin.')

@@ -49,6 +49,7 @@ class BasePluginTest(TestCase):
     def setUp(self):
         lifestream = Lifestream.objects.create(name='dummy')
         self.feed = Feed(title='plugin', feed_plugin='plugin', lifestream=lifestream)
+
     def test_initialize(self):
         plugin = BasePlugin(feed=self.feed)
 

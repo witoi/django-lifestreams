@@ -19,7 +19,7 @@ class Feed(models.Model):
     '''
     lifestream = models.ForeignKey('Lifestream', verbose_name=_('Lifestream'), related_name='feeds')
     title = models.CharField(_('Title'), max_length=100)
-    feed_plugin = models.CharField(_('Feed Plugin'), max_length=100, choices=get_setting('LIFESTREAMS_FEED_PLUGINS'))
+    feed_plugin = models.CharField(_('Feed Plugin'), max_length=100, choices=get_setting('LIFESTREAMS_PLUGIN_CHOICES'))
     ordering = models.IntegerField(_('Ordering'), default=0)
     created = models.DateTimeField(_('Created'), auto_now_add=True)
     updated = models.DateTimeField(_('Updated'), auto_now=True)

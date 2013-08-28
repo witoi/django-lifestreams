@@ -1,9 +1,9 @@
 from django.conf import settings
 
 DEFAULT_SETTINGS = {
-    'LIFESTREAM_PLUGIN_CHOICES': {
-        'lifestreams.plugins.twitter.plugin.TwitterPlugin': 'Twitter',
-    }
+    'LIFESTREAMS_PLUGIN_CHOICES': (
+        ('lifestreams.plugins.twitter.plugin.TwitterPlugin', 'Twitter'),
+    )
 }
 
 def get_setting(name, default=None):

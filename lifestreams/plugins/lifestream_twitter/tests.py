@@ -11,62 +11,73 @@ from .plugin import TwitterPlugin, TweetsHandler
 from .models import TwitterFeed
 
 
-@override_settings(TWITTER_CONSUMER_KEY='a', TWITTER_CONSUMER_SECRET='b',
-                   TWITTER_ACCESS_TOKEN='c', TWITTER_ACCESS_TOKEN_SECRET='d')
 class PluginTest(TestCase):
     def setUp(self):
+        self.consumer_key = 'a'
+        self.consumer_secret = 'b'
+        self.access_token = 'c'
+        self.access_token_secret = 'd'
         self.plugin = 'lifestreams.plugins.lifestream_twitter.plugin.TwitterPlugin'
         self.lifestream = Lifestream.objects.create(name='dummy')
         self.feed = Feed(title=self.plugin, feed_plugin=self.plugin, lifestream=self.lifestream)
         self.feed.save()
-        self.twitter_feed = TwitterFeed(feed=self.feed, screen_name='uniquisimo')
+        self.twitter_feed = TwitterFeed(feed=self.feed,
+                                        screen_name='uniquisimo',
+                                        consumer_key=self.consumer_key,
+                                        consumer_secret=self.consumer_secret,
+                                        access_token=self.access_token,
+                                        access_token_secret=self.access_token_secret)
         self.twitter_feed.save()
     
     @patch('lifestreams.plugins.lifestream_twitter.plugin.TweetsHandler')
     def test_handler_called(self, TweetsHandler):
-        consumer_key, consumer_secret, access_token, access_token_secret = ['a', 'b', 'c', 'd']
         
         TwitterPlugin(feed=self.feed)
         
-        TweetsHandler.assert_called_once_with(consumer_key=consumer_key,
-                                              consumer_secret=consumer_secret,
-                                              access_token=access_token,
-                                              access_token_secret=access_token_secret,
+        TweetsHandler.assert_called_once_with(consumer_key=self.consumer_key,
+                                              consumer_secret=self.consumer_secret,
+                                              access_token=self.access_token,
+                                              access_token_secret=self.access_token_secret,
                                               screen_name=self.twitter_feed.screen_name)
 
     @patch('lifestreams.plugins.lifestream_twitter.plugin.TweetsHandler')
-    @patch('lifestreams.plugins.lifestream_twitter.plugin.TwitterPlugin.get_screen_name')
-    def test_get_screen_name_called(self, get_screen_name, TweetsHandler):
-        consumer_key, consumer_secret, access_token, access_token_secret = ['a', 'b', 'c', 'd']
+    @patch('lifestreams.plugins.lifestream_twitter.plugin.TwitterPlugin.__init__')
+    def test_get_handler_kwargs_without_twitter_feed(self, init, TweetsHandler):
+        init.return_value = None
+        feed = Feed(title=self.plugin, feed_plugin=self.plugin, lifestream=self.lifestream)
+        feed.save()
+        plugin = TwitterPlugin()
+        plugin.feed = feed
+
+        self.assertRaises(FeedNotConfiguredException, plugin.get_handler_kwargs)
+
+    @patch('lifestreams.plugins.lifestream_twitter.plugin.TweetsHandler')
+    def test_access_from_twitter_feed(self, TweetsHandler):
+        consumer_key, consumer_secret, access_token, access_token_secret = ['d', 'c', 'b', 'a']
+        screen_name = 'pedro_witoi'
+        feed = Feed(title=self.plugin, feed_plugin=self.plugin, lifestream=self.lifestream)
+        feed.save()
+        twitter_feed = TwitterFeed(feed=feed, screen_name=screen_name,
+                                   consumer_key=consumer_key,
+                                   consumer_secret=consumer_secret,
+                                   access_token=access_token,
+                                   access_token_secret=access_token_secret)
+        twitter_feed.save()
+
+        TwitterPlugin(feed=feed)
         
-        TwitterPlugin(feed=self.feed)
-        
-        get_screen_name.assert_called_once_with()
         TweetsHandler.assert_called_once_with(consumer_key=consumer_key,
                                               consumer_secret=consumer_secret,
                                               access_token=access_token,
                                               access_token_secret=access_token_secret,
-                                              screen_name=get_screen_name.return_value)
+                                              screen_name=screen_name)
 
     @patch('lifestreams.plugins.lifestream_twitter.plugin.TweetsHandler')
-    def test_get_screen_name(self, TweetsHandler):
-        feed = Feed(title=self.plugin, feed_plugin=self.plugin, lifestream=self.lifestream)
-        feed.save()
-        twitter_feed = TwitterFeed(feed=feed, screen_name='pedro_witoi')
-        twitter_feed.save()
-        plugin = TwitterPlugin(feed=feed)
-
-        screen_name = plugin.get_screen_name()
-
-        self.assertEqual(twitter_feed.screen_name, screen_name)
-
-    @patch('lifestreams.plugins.lifestream_twitter.plugin.TweetsHandler')
-    def test_get_screen_name_without_twitter_feed(self, TweetsHandler):
-        feed = Feed(title=self.plugin, feed_plugin=self.plugin, lifestream=self.lifestream)
-        feed.save()
-
-        self.assertRaises(FeedNotConfiguredException, TwitterPlugin, feed=feed)
+    @patch('lifestreams.plugins.lifestream_twitter.plugin.TwitterPlugin.get_handler_kwargs')
+    def test_get_handler_kwargs_called(self, get_handler_kwargs, TweetsHandler):
+        TwitterPlugin(feed=self.feed)
         
+        get_handler_kwargs.assert_called_once_with()
 
     @patch('lifestreams.plugins.lifestream_twitter.plugin.TweetsHandler')
     def test_update_handler_update(self, TweetsHandler):

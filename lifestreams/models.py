@@ -37,3 +37,12 @@ class Feed(models.Model):
     def update(self):
         plugin = self.get_plugin()
         return plugin.update()
+
+
+class Item(models.Model):
+    '''
+    '''
+    feed = models.ForeignKey('Feed', verbose_name=_('Feed'), related_name='items')
+    content = models.TextField(_('Content'))
+    author = models.CharField(_('Author'), max_length=100)
+    published = models.DateTimeField(_('Published'))

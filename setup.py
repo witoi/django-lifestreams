@@ -32,6 +32,7 @@ setup (
     ],
     tests_require = [
       'mock>=1.0.1',
+      'tweepy>=2.1',
     ],
     packages=find_packages(),
     test_suite='runtests.runtests',

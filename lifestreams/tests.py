@@ -8,6 +8,7 @@ from mock import patch
 
 from .utils import get_setting, DEFAULT_SETTINGS
 from .models import Feed, Lifestream
+from .plugins import BasePlugin
 
 
 class UtilsTest(TestCase):
@@ -43,9 +44,26 @@ class FeedModelTest(TestCase):
             instance.update.assert_called_once_with()
             self.assertEqual(instance, return_value)
 
+
+class BasePluginTest(TestCase):
+    def setUp(self):
+        lifestream = Lifestream.objects.create(name='dummy')
+        self.feed = Feed(title='plugin', feed_plugin='plugin', lifestream=lifestream)
+    def test_initialize(self):
+        plugin = BasePlugin(feed=self.feed)
+
+        self.assertEqual(self.feed, plugin.feed)
+
+    def test_notimplemented(self):
+        plugin = BasePlugin(feed=self.feed)
+
+        self.assertRaises(NotImplementedError, plugin.update)
+
+
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(doctest.DocTestSuite('lifestreams.utils'))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(UtilsTest))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(FeedModelTest))
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(BasePluginTest))
     return suite

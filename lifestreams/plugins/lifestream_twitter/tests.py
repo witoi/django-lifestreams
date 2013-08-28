@@ -5,8 +5,10 @@ from django.utils.timezone import now
 from mock import patch, Mock
 
 from lifestreams.models import Feed, Lifestream
+from lifestreams.exceptions import FeedNotConfiguredException
 
 from .plugin import TwitterPlugin, TweetsHandler
+from .models import TwitterFeed
 
 
 @override_settings(TWITTER_CONSUMER_KEY='a', TWITTER_CONSUMER_SECRET='b',
@@ -14,9 +16,11 @@ from .plugin import TwitterPlugin, TweetsHandler
 class PluginTest(TestCase):
     def setUp(self):
         self.plugin = 'lifestreams.plugins.lifestream_twitter.plugin.TwitterPlugin'
-        lifestream = Lifestream.objects.create(name='dummy')
-        self.feed = Feed(title=self.plugin, feed_plugin=self.plugin, lifestream=lifestream)
+        self.lifestream = Lifestream.objects.create(name='dummy')
+        self.feed = Feed(title=self.plugin, feed_plugin=self.plugin, lifestream=self.lifestream)
         self.feed.save()
+        self.twitter_feed = TwitterFeed(feed=self.feed, screen_name='uniquisimo')
+        self.twitter_feed.save()
     
     @patch('lifestreams.plugins.lifestream_twitter.plugin.TweetsHandler')
     def test_handler_called(self, TweetsHandler):
@@ -24,7 +28,45 @@ class PluginTest(TestCase):
         
         TwitterPlugin(feed=self.feed)
         
-        TweetsHandler.assert_called_once_with(consumer_key, consumer_secret, access_token, access_token_secret)
+        TweetsHandler.assert_called_once_with(consumer_key=consumer_key,
+                                              consumer_secret=consumer_secret,
+                                              access_token=access_token,
+                                              access_token_secret=access_token_secret,
+                                              screen_name=self.twitter_feed.screen_name)
+
+    @patch('lifestreams.plugins.lifestream_twitter.plugin.TweetsHandler')
+    @patch('lifestreams.plugins.lifestream_twitter.plugin.TwitterPlugin.get_screen_name')
+    def test_get_screen_name_called(self, get_screen_name, TweetsHandler):
+        consumer_key, consumer_secret, access_token, access_token_secret = ['a', 'b', 'c', 'd']
+        
+        TwitterPlugin(feed=self.feed)
+        
+        get_screen_name.assert_called_once_with()
+        TweetsHandler.assert_called_once_with(consumer_key=consumer_key,
+                                              consumer_secret=consumer_secret,
+                                              access_token=access_token,
+                                              access_token_secret=access_token_secret,
+                                              screen_name=get_screen_name.return_value)
+
+    @patch('lifestreams.plugins.lifestream_twitter.plugin.TweetsHandler')
+    def test_get_screen_name(self, TweetsHandler):
+        feed = Feed(title=self.plugin, feed_plugin=self.plugin, lifestream=self.lifestream)
+        feed.save()
+        twitter_feed = TwitterFeed(feed=feed, screen_name='pedro_witoi')
+        twitter_feed.save()
+        plugin = TwitterPlugin(feed=feed)
+
+        screen_name = plugin.get_screen_name()
+
+        self.assertEqual(twitter_feed.screen_name, screen_name)
+
+    @patch('lifestreams.plugins.lifestream_twitter.plugin.TweetsHandler')
+    def test_get_screen_name_without_twitter_feed(self, TweetsHandler):
+        feed = Feed(title=self.plugin, feed_plugin=self.plugin, lifestream=self.lifestream)
+        feed.save()
+
+        self.assertRaises(FeedNotConfiguredException, TwitterPlugin, feed=feed)
+        
 
     @patch('lifestreams.plugins.lifestream_twitter.plugin.TweetsHandler')
     def test_update_handler_update(self, TweetsHandler):
@@ -97,13 +139,16 @@ class TweetsHandlerTest(TestCase):
         self.consumer_secret = 'b'
         self.access_token = 'c'
         self.access_token_secret = 'd'
+        self.screen_name = 'pedro_witoi'
 
     @patch('tweepy.OAuthHandler')
     @patch('tweepy.API')
     def test_intialize(self, API, OAuthHandler):
         auth = OAuthHandler.return_value
 
-        TweetsHandler(self.consumer_key, self.consumer_secret, self.access_token, self.access_token_secret)
+        TweetsHandler(consumer_key=self.consumer_key, consumer_secret=self.consumer_secret,
+                      access_token=self.access_token, access_token_secret=self.access_token_secret,
+                      screen_name=self.screen_name)
 
         OAuthHandler.assert_called_once_with(self.consumer_key, self.consumer_secret)
         auth.set_access_token.assert_called_once_with(self.access_token, self.access_token_secret)
@@ -111,20 +156,24 @@ class TweetsHandlerTest(TestCase):
 
     @patch('tweepy.API')
     def test_update(self, API):
-        handler = TweetsHandler(self.consumer_key, self.consumer_secret, self.access_token, self.access_token_secret)
+        handler = TweetsHandler(consumer_key=self.consumer_key, consumer_secret=self.consumer_secret,
+                                access_token=self.access_token, access_token_secret=self.access_token_secret,
+                                screen_name=self.screen_name)
         api = API.return_value
 
         result = handler.update()
 
-        api.user_timeline.assert_called_once_with()
+        api.user_timeline.assert_called_once_with(screen_name=self.screen_name)
         self.assertEqual(api.user_timeline.return_value, result)
 
     @patch('tweepy.API')
     def test_update_since_id(self, API):
-        handler = TweetsHandler(self.consumer_key, self.consumer_secret, self.access_token, self.access_token_secret)
+        handler = TweetsHandler(consumer_key=self.consumer_key, consumer_secret=self.consumer_secret,
+                                access_token=self.access_token, access_token_secret=self.access_token_secret,
+                                screen_name=self.screen_name)
         api = API.return_value
 
         result = handler.update(since_id=1)
 
-        api.user_timeline.assert_called_once_with(since_id=1)
+        api.user_timeline.assert_called_once_with(screen_name=self.screen_name, since_id=1)
         self.assertEqual(api.user_timeline.return_value, result)

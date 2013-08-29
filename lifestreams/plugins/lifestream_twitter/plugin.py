@@ -39,18 +39,15 @@ class TwitterPlugin(BasePlugin):
         kwargs = self.get_handler_kwargs()
         self.handler = TweetsHandler(**kwargs)
 
-    def update(self):
-        tweets = self.handler.update(**self.get_update_kwargs())
-        for tweet in tweets:
-            self.create_item(tweet)
-        return self
-
     def create_item(self, tweet):
         item = self.feed.items.create(content=tweet.text,
                                       author=tweet.author.screen_name,
                                       published=tweet.created_at)
         itemtweet = ItemTweet(item=item, tweet_id=tweet.id)
         itemtweet.save()
+
+    def get_handler(self):
+        return self.handler
 
     def get_handler_kwargs(self):
         try:

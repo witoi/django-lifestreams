@@ -3,8 +3,9 @@ import unittest
 
 from django.test import TestCase
 from django.conf import settings
+from django.core.management import call_command
 
-from mock import patch
+from mock import patch, Mock
 
 from .utils import get_setting, DEFAULT_SETTINGS
 from .models import Feed, Lifestream
@@ -55,11 +56,111 @@ class BasePluginTest(TestCase):
 
         self.assertEqual(self.feed, plugin.feed)
 
-    def test_notimplemented(self):
+
+    @patch('lifestreams.plugins.BasePlugin.get_update_kwargs')
+    @patch('lifestreams.plugins.BasePlugin.create_item')
+    @patch('lifestreams.plugins.BasePlugin.get_handler')
+    def test_update_called(self, get_handler, create_item, get_update_kwargs):
+        handler = get_handler.return_value
+        handler.update.return_value = []
         plugin = BasePlugin(feed=self.feed)
 
-        self.assertRaises(NotImplementedError, plugin.update)
+        self.assertEqual(plugin, plugin.update())
 
+    @patch('lifestreams.plugins.BasePlugin.create_item')
+    @patch('lifestreams.plugins.BasePlugin.get_handler')
+    @patch('lifestreams.plugins.BasePlugin.get_update_kwargs')
+    def test_update_called_with_kwargs(self, get_update_kwargs, get_handler, create_item):
+        handler = get_handler.return_value
+        handler.update.return_value = []
+        get_update_kwargs.return_value
+        plugin = BasePlugin(feed=self.feed)
+
+        plugin.update()
+
+        get_update_kwargs.assert_called_once_with()
+        handler.update.assert_called_once_with(**get_update_kwargs.return_value)
+
+    @patch('lifestreams.plugins.BasePlugin.get_update_kwargs')
+    @patch('lifestreams.plugins.BasePlugin.create_item')
+    @patch('lifestreams.plugins.BasePlugin.get_handler')
+    def test_update_get_handler_called(self, get_handler, create_item, get_update_kwargs):
+        handler = get_handler.return_value
+        handler.update.return_value = []
+        plugin = BasePlugin(feed=self.feed)
+
+        plugin.update()
+
+        get_handler.assert_called_once_with()
+
+    @patch('lifestreams.plugins.BasePlugin.get_update_kwargs')
+    @patch('lifestreams.plugins.BasePlugin.create_item')
+    @patch('lifestreams.plugins.BasePlugin.get_handler')
+    def test_update_create_item_called(self, get_handler, create_item, get_update_kwargs):
+        handler = get_handler.return_value
+        item = Mock()
+        handler.update.return_value = [item]
+        plugin = BasePlugin(feed=self.feed)
+
+        plugin.update()
+
+        create_item.assert_called_once_with(item)
+
+    def test_not_implemented_get_handler(self):
+        plugin = BasePlugin(feed=self.feed)
+
+        self.assertRaises(NotImplementedError, plugin.get_handler)
+
+    def test_not_implemented_create_item(self):
+        plugin = BasePlugin(feed=self.feed)
+
+        self.assertRaises(NotImplementedError, plugin.create_item)
+
+    def test_not_implemented_get_update_kwargs(self):
+        plugin = BasePlugin(feed=self.feed)
+
+        self.assertRaises(NotImplementedError, plugin.get_update_kwargs)
+
+
+class UpdateLifestreamsCommandTest(TestCase):
+    def setUp(self):
+        pass
+
+    @patch('lifestreams.models.Feed.update')
+    def test_no_feeds(self, update):
+        args = []
+        opts = {}
+        call_command('update_lifestreams', *args, **opts)
+
+        self.assertFalse(update.called)
+
+    @patch('lifestreams.models.Feed.update')
+    def test_one_feed(self, update):
+        plugin = 'lifestreams.plugins.BasePlugin'
+        lifestream = Lifestream.objects.create(name='dummy')
+        feed = Feed(title=plugin, feed_plugin=plugin, lifestream=lifestream)
+        feed.save()
+        args = []
+        opts = {}
+
+        call_command('update_lifestreams', *args, **opts)
+
+        update.assert_called_once_with()
+
+    @patch('lifestreams.models.Feed.update')
+    def test_more_feeds(self, update):
+        plugin = 'lifestreams.plugins.BasePlugin'
+        lifestream = Lifestream.objects.create(name='dummy')
+        feed1 = Feed(title=plugin, feed_plugin=plugin, lifestream=lifestream)
+        feed2 = Feed(title=plugin, feed_plugin=plugin, lifestream=lifestream)
+        feed1.save()
+        feed2.save()
+        args = []
+        opts = {}
+
+        call_command('update_lifestreams', *args, **opts)
+
+        self.assertEqual(Feed.objects.count(), update.call_count)
 
 def suite():
     suite = unittest.TestSuite()
@@ -67,4 +168,5 @@ def suite():
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(UtilsTest))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(FeedModelTest))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(BasePluginTest))
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(UpdateLifestreamsCommandTest))
     return suite

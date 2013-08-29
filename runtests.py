@@ -21,6 +21,27 @@ if not settings.configured:
         ),
         SITE_ID=1,
         SECRET_KEY='this-is-just-for-tests-so-not-that-secret',
+        LOGGING = {
+            'version': 1,
+            'disable_existing_loggers': True,
+            'handlers': {
+                'null': {
+                    'level': 'DEBUG',
+                    'class': 'logging.NullHandler'
+                },
+                'console':{
+                    'level': 'DEBUG',
+                    'class': 'logging.StreamHandler'
+                }
+            },
+            'loggers': {
+                '': {
+                    'handlers': [os.getenv('LIFESTREAMS_LOGGER_HANDLER', 'null')],
+                    'propagate': True,
+                    'level': 'DEBUG',
+                }
+            }
+        }
     )
 
 

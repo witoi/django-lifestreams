@@ -20,6 +20,7 @@ lib64
 __pycache__
 example_project
 .env
+README.html
 
 # Installer logs
 pip-log.txt

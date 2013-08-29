@@ -10,6 +10,7 @@ from mock import patch, Mock
 from .utils import get_setting, DEFAULT_SETTINGS
 from .models import Feed, Lifestream
 from .plugins import BasePlugin
+from .exceptions import FeedNotConfiguredException
 
 
 class UtilsTest(TestCase):
@@ -44,6 +45,16 @@ class FeedModelTest(TestCase):
             return_value = self.feed.update()
             instance.update.assert_called_once_with()
             self.assertEqual(instance, return_value)
+
+    def test_update_feed_not_fetchable(self):
+        self.feed.fetchable = False
+        self.feed.save()
+        with patch(self.plugin) as MockClass:
+            instance = MockClass.return_value
+
+            self.feed.update()
+
+            self.assertFalse(instance.update.called)
 
 
 class BasePluginTest(TestCase):
@@ -161,6 +172,60 @@ class UpdateLifestreamsCommandTest(TestCase):
         call_command('update_lifestreams', *args, **opts)
 
         self.assertEqual(Feed.objects.count(), update.call_count)
+
+    @patch('lifestreams.tests.DummyPlugin')
+    def test_one_feed_not_configured(self, DummyPlugin):
+        lifestream = Lifestream.objects.create(name='dummy')
+        DummyPlugin.return_value.update.side_effect = FeedNotConfiguredException
+        feed = Feed(title='DummyPlugin', feed_plugin='lifestreams.tests.DummyPlugin', lifestream=lifestream)
+        feed.save()
+        args = []
+        opts = {}
+
+        call_command('update_lifestreams', *args, **opts)
+
+        DummyPlugin.return_value.update.assert_called_once_with()
+
+    @patch('lifestreams.plugins.BasePlugin')
+    @patch('lifestreams.tests.DummyPlugin')
+    def test_two_feeds_one_feed_not_configured(self, DummyPlugin, BasePlugin):
+        lifestream = Lifestream.objects.create(name='dummy')
+        DummyPlugin.return_value.update.side_effect = FeedNotConfiguredException
+        feed1 = Feed(title='DummyPlugin', feed_plugin='lifestreams.tests.DummyPlugin', lifestream=lifestream)
+        feed1.save()
+        feed2 = Feed(title='BasePlugin', feed_plugin='lifestreams.plugins.BasePlugin', lifestream=lifestream)
+        feed2.save()
+        args = []
+        opts = {}
+
+        call_command('update_lifestreams', *args, **opts)
+
+        DummyPlugin.return_value.update.assert_called_once_with()
+        BasePlugin.return_value.update.assert_called_once_with()
+
+    @patch('lifestreams.plugins.BasePlugin')
+    @patch('lifestreams.tests.DummyPlugin')
+    def test_two_feeds_two_lifestreams(self, DummyPlugin, BasePlugin):
+        lifestream1 = Lifestream.objects.create(name='DummyPlugin')
+        lifestream2 = Lifestream.objects.create(name='BasePlugin')
+        feed1 = Feed(title='DummyPlugin', feed_plugin='lifestreams.tests.DummyPlugin', lifestream=lifestream1)
+        feed1.save()
+        feed2 = Feed(title='BasePlugin', feed_plugin='lifestreams.plugins.BasePlugin', lifestream=lifestream2)
+        feed2.save()
+        args = [lifestream1.name]
+        opts = {}
+
+        call_command('update_lifestreams', *args, **opts)
+
+        DummyPlugin.return_value.update.assert_called_once_with()
+        self.assertFalse(BasePlugin.called)
+
+
+
+
+class DummyPlugin(BasePlugin):
+    pass
+
 
 def suite():
     suite = unittest.TestSuite()

@@ -7,11 +7,14 @@ from .utils import get_setting, split_class_name, get_class
 class Lifestream(models.Model):
     '''
     '''
-    name = models.CharField(_('Name'), max_length=100)
+    name = models.CharField(_('Name'), max_length=100, unique=True)
 
     class Meta:
         verbose_name = _('Lifestream')
         verbose_name_plural = _('Lifestreams')
+
+    def __unicode__(self):
+        return self.name
 
 
 class Feed(models.Model):
@@ -23,6 +26,7 @@ class Feed(models.Model):
     ordering = models.IntegerField(_('Ordering'), default=0)
     created = models.DateTimeField(_('Created'), auto_now_add=True)
     updated = models.DateTimeField(_('Updated'), auto_now=True)
+    fetchable = models.BooleanField(_('Fetchable'), default=True)
 
     class Meta:
         verbose_name = _('Feed')
@@ -35,8 +39,12 @@ class Feed(models.Model):
         return PluginClass(feed=self)
 
     def update(self):
-        plugin = self.get_plugin()
-        return plugin.update()
+        if self.fetchable:
+            plugin = self.get_plugin()
+            return plugin.update()
+
+    def __unicode__(self):
+        return self.title
 
 
 class Item(models.Model):
@@ -46,3 +54,15 @@ class Item(models.Model):
     content = models.TextField(_('Content'))
     author = models.CharField(_('Author'), max_length=100)
     published = models.DateTimeField(_('Published'))
+
+    created = models.DateTimeField(_('Created'), auto_now_add=True)
+    updated = models.DateTimeField(_('Updated'), auto_now=True)
+
+    class Meta:
+        verbose_name = _('Item')
+        verbose_name_plural = _('Items')
+        ordering = ('-published', '-created', '-updated')
+
+
+    def __unicode__(self):
+        return "%s %s" % (self.author, self.published)

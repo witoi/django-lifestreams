@@ -12,7 +12,7 @@ class BasePlugin(object):
     def get_handler(self):
         raise NotImplementedError("Subclassing BasePlugin must implement get_handler method.")
 
-    def create_item(self):
+    def create_item(self, item):
         raise NotImplementedError("Subclassing BasePlugin must implement create_item method.")
 
     def get_update_kwargs(self):

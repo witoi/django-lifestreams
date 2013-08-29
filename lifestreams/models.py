@@ -53,6 +53,7 @@ class Item(models.Model):
     feed = models.ForeignKey('Feed', verbose_name=_('Feed'), related_name='items')
     content = models.TextField(_('Content'))
     author = models.CharField(_('Author'), max_length=100)
+    link = models.URLField(_('Link'))
     published = models.DateTimeField(_('Published'))
 
     created = models.DateTimeField(_('Created'), auto_now_add=True)

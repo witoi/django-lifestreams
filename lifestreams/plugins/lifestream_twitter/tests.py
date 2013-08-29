@@ -142,6 +142,8 @@ class PluginTest(TestCase):
         self.assertEqual(unicode(tweet.author.screen_name), item.author)
         self.assertEqual(tweet.created_at, item.published)
         self.assertEqual(unicode(tweet.id), item.tweet.tweet_id)
+        link = 'https://twitter.com/%s/status/%s' % (tweet.author.screen_name, tweet.id)
+        self.assertEqual(link, item.link)
 
 
 class TweetsHandlerTest(TestCase):

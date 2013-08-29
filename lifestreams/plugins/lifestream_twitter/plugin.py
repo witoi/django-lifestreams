@@ -40,9 +40,11 @@ class TwitterPlugin(BasePlugin):
         self.handler = TweetsHandler(**kwargs)
 
     def create_item(self, tweet):
+        link = 'https://twitter.com/%s/status/%s' % (tweet.author.screen_name, tweet.id)
         item = self.feed.items.create(content=tweet.text,
                                       author=tweet.author.screen_name,
-                                      published=tweet.created_at)
+                                      published=tweet.created_at,
+                                      link=link)
         itemtweet = ItemTweet(item=item, tweet_id=tweet.id)
         itemtweet.save()
 

@@ -125,7 +125,7 @@ class BasePluginTest(TestCase):
     def test_not_implemented_create_item(self):
         plugin = BasePlugin(feed=self.feed)
 
-        self.assertRaises(NotImplementedError, plugin.create_item)
+        self.assertRaises(NotImplementedError, plugin.create_item, None)
 
     def test_not_implemented_get_update_kwargs(self):
         plugin = BasePlugin(feed=self.feed)

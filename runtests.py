@@ -18,6 +18,7 @@ if not settings.configured:
             'django.contrib.auth',
             'lifestreams',
             'lifestreams.plugins.lifestream_twitter',
+            'lifestreams.plugins.lifestream_instagram',
         ),
         SITE_ID=1,
         SECRET_KEY='this-is-just-for-tests-so-not-that-secret',
@@ -52,7 +53,7 @@ def runtests():
     interactive = os.getenv('LIFESTREAMS_INTERACTIVE', 'True') == 'True'
     TestRunner = get_runner(settings)
     test_runner = TestRunner(verbosity=1, interactive=interactive, failfast=failfast)
-    failures = test_runner.run_tests(['lifestreams', 'lifestream_twitter'])
+    failures = test_runner.run_tests(['lifestreams', 'lifestream_twitter', 'lifestream_instagram'])
     sys.exit(failures)
 
 

@@ -3,6 +3,7 @@ from django.conf import settings
 DEFAULT_SETTINGS = {
     'LIFESTREAMS_PLUGIN_CHOICES': (
         ('lifestreams.plugins.lifestream_twitter.plugin.TwitterPlugin', 'Twitter'),
+        ('lifestreams.plugins.lifestream_instagram.plugin.InstagramPlugin', 'Instagram'),
     )
 }
 

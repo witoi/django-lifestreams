@@ -17,15 +17,17 @@ Included plugins
 ----------------
 
 - *Twitter*: `lifestreams.plugins.lifestream_twitter`
+- *Instagram*: `lifestreams.plugins.instagram`
   
 LIFESTREAMS_PLUGIN_CHOICES example
 ----------------------------------
 
 ::
 
-	LIFESTREAMS_PLUGIN_CHOICES = (
+    LIFESTREAMS_PLUGIN_CHOICES = (
         ('lifestreams.plugins.lifestream_twitter.plugin.TwitterPlugin', 'Twitter'),
-    )
+        ('lifestreams.plugins.lifestream_instagram.plugin.InstagramPlugin', 'Instagram'),
+    )                  
 
 
 Management Command
@@ -33,5 +35,4 @@ Management Command
 
 ::
 
-    python manage.py update_lifestreams
-    python manage.py update_lifestreams lifestream
+    python manage.py update_lifestreams <lifestream_name>

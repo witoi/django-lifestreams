@@ -118,8 +118,8 @@ class PluginTest(TestCase):
         plugin.update()
 
         self.assertEqual(2, self.feed.items.count())
-        item1 = self.feed.items.all()[0]
-        item2 = self.feed.items.all()[1]
+        item2 = self.feed.items.all()[0]
+        item1 = self.feed.items.all()[1]
         self.assert_compare_tweet_item(tweet1, item1)
         self.assert_compare_tweet_item(tweet2, item2)
 

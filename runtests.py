@@ -19,6 +19,7 @@ if not settings.configured:
             'lifestreams',
             'lifestreams.plugins.lifestream_twitter',
             'lifestreams.plugins.lifestream_instagram',
+            'lifestreams.plugins.lifestream_rss',
         ),
         SITE_ID=1,
         SECRET_KEY='this-is-just-for-tests-so-not-that-secret',
@@ -49,11 +50,12 @@ if not settings.configured:
 from django.test.utils import get_runner
 
 def runtests():
-    failfast = os.getenv('LIFESTREAMS_FAILFAST', 'False') == 'True'
-    interactive = os.getenv('LIFESTREAMS_INTERACTIVE', 'True') == 'True'
+    failfast = os.getenv('FAILFAST', 'False') == 'True'
+    interactive = os.getenv('INTERACTIVE', 'True') == 'True'
     TestRunner = get_runner(settings)
     test_runner = TestRunner(verbosity=1, interactive=interactive, failfast=failfast)
-    failures = test_runner.run_tests(['lifestreams', 'lifestream_twitter', 'lifestream_instagram'])
+    failures = test_runner.run_tests(['lifestreams', 'lifestream_twitter',
+                                      'lifestream_instagram', 'lifestream_rss'])
     sys.exit(failures)
 
 

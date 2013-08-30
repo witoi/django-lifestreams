@@ -1,2 +1,8 @@
+
+
 class FeedNotConfiguredException(Exception):
-	pass
+    pass
+
+
+class FeedErrorException(Exception):
+    pass

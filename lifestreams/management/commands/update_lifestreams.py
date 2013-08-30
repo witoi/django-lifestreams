@@ -3,7 +3,7 @@ import logging
 from django.core.management.base import BaseCommand
 
 from lifestreams.models import Feed
-from lifestreams.exceptions import FeedNotConfiguredException
+from lifestreams.exceptions import FeedNotConfiguredException, FeedErrorException
 
 logger = logging.getLogger(__name__)
 
@@ -28,5 +28,5 @@ class Command(BaseCommand):
             logger.info('Feed <%d> updated.', feed.id)
         except FeedNotConfiguredException:
             logger.warn('Feed <%d> not updated due to FeedNotConfiguredException.', feed.id)
-        except Exception, e:
-            print e
+        except FeedErrorException:
+            logger.warn('Feed <%d> not updated due to a feed error.', feed.id)

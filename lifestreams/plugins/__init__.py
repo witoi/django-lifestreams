@@ -4,8 +4,8 @@ class BasePlugin(object):
         self.feed = feed
 
     def update(self):
-        handler = self.get_handler()
-        for item in handler.update(**self.get_update_kwargs()):
+        self.handler = self.get_handler()
+        for item in self.handler.update(**self.get_update_kwargs()):
             self.create_item(item)
         return self
 

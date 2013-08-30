@@ -33,7 +33,8 @@ setup (
     tests_require = [
       'mock>=1.0.1',
       'tweepy>=2.1',
-      'python-instagram>=0.8.0'
+      'python-instagram>=0.8.0',
+      'feedparser>=5.0'
     ],
     packages=find_packages(),
     test_suite='runtests.runtests',

@@ -18,6 +18,7 @@ Included plugins
 
 - *Twitter*: `lifestreams.plugins.lifestream_twitter`
 - *Instagram*: `lifestreams.plugins.instagram`
+- *RSS*: `lifestreams.plugins.rss`
   
 LIFESTREAMS_PLUGIN_CHOICES example
 ----------------------------------
@@ -27,6 +28,7 @@ LIFESTREAMS_PLUGIN_CHOICES example
     LIFESTREAMS_PLUGIN_CHOICES = (
         ('lifestreams.plugins.lifestream_twitter.plugin.TwitterPlugin', 'Twitter'),
         ('lifestreams.plugins.lifestream_instagram.plugin.InstagramPlugin', 'Instagram'),
+        ('lifestreams.plugins.lifestream_rss.plugin.RSSPlugin', 'RSS'),
     )                  
 
 

@@ -1,6 +1,9 @@
-from django.test import TestCase
-from django.utils.timezone import now
+from datetime import datetime
 
+from django.test import TestCase
+from django.utils.timezone import is_aware
+
+import pytz
 from mock import patch, Mock
 
 from lifestreams.models import Lifestream, Feed, Item
@@ -42,7 +45,7 @@ class PluginTest(TestCase):
         instagram_feed.save()
         handler = get_handler.return_value
         media = Mock()
-        media.created_time = now()
+        media.created_time = datetime.now()
         handler.update.return_value = [media]
         plugin = InstagramPlugin(feed=self.feed)
 
@@ -59,7 +62,7 @@ class PluginTest(TestCase):
         instagram_feed.save()
         handler = get_handler.return_value
         media = Mock()
-        media.created_time = now()
+        media.created_time = datetime.now()
         media.caption = None
         handler.update.return_value = [media]
         plugin = InstagramPlugin(feed=self.feed)
@@ -80,9 +83,9 @@ class PluginTest(TestCase):
         access_token = 'access_token'
         instagram_feed = InstagramFeed(feed=self.feed, access_token=access_token)
         instagram_feed.save()
-        item1 = self.feed.items.create(content='a', author='a', published=now())
+        item1 = self.feed.items.create(content='a', author='a', published=datetime.now())
         ItemMedia.objects.create(item=item1, instagram_id='1')
-        item2 = self.feed.items.create(content='b', author='a', published=now())
+        item2 = self.feed.items.create(content='b', author='a', published=datetime.now())
         ItemMedia.objects.create(item=item2, instagram_id='2')
         plugin = InstagramPlugin(feed=self.feed)
 
@@ -93,11 +96,13 @@ class PluginTest(TestCase):
     def assert_compare_media_item(self, media, item):
         self.assertEqual(unicode(media.get_standard_resolution_url.return_value), item.content)
         self.assertEqual(unicode(media.user.username), item.author)
-        self.assertEqual(media.created_time, item.published)
+        published = pytz.UTC.localize(media.created_time)
+        self.assertEqual(published, item.published)
         self.assertEqual(unicode(media.id), item.instagram.instagram_id)
         caption = media.caption and media.caption.text or ''
         self.assertEqual(unicode(caption), item.instagram.caption)
         self.assertEqual(unicode(media.link), item.link)
+        self.assertTrue(is_aware(item.published))
 
 
 class InstagramHandlerTest(TestCase):

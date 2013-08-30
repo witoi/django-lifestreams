@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
+import pytz
 from instagram import client
 
 from lifestreams.plugins import BasePlugin
@@ -37,7 +38,7 @@ class InstagramPlugin(BasePlugin):
             raise FeedNotConfiguredException
 
     def create_item(self, media):
-        item = self.feed.items.create(published=media.created_time,
+        item = self.feed.items.create(published=pytz.UTC.localize(media.created_time),
                                       content=media.get_standard_resolution_url(),
                                       author=media.user.username,
                                       link=media.link)

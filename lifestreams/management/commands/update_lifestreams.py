@@ -21,12 +21,11 @@ class Command(BaseCommand):
             queryset = queryset.filter(lifestream__name=lifestream)
         return queryset
 
-
     def __update(self, feed):
         try:
             feed.update()
-            logger.info('Feed <%d> updated.', feed.id)
+            logger.info('Feed %s<%d> updated.', feed, feed.id)
         except FeedNotConfiguredException:
-            logger.warn('Feed <%d> not updated due to FeedNotConfiguredException.', feed.id)
+            logger.warn('Feed %s<%d> not updated due to FeedNotConfiguredException.', feed, feed.id)
         except FeedErrorException:
-            logger.warn('Feed <%d> not updated due to a feed error.', feed.id)
+            logger.warn('Feed %s<%d> not updated due to a feed error.', feed, feed.id)

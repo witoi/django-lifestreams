@@ -1,10 +1,8 @@
-import time
-from datetime import datetime
-
 from django.test import TestCase
 from django.utils.timezone import now
 
 from mock import patch, Mock
+import dateutil.parser
 
 from lifestreams.models import Lifestream, Feed, Item
 from lifestreams.exceptions import FeedNotConfiguredException, FeedErrorException
@@ -45,7 +43,7 @@ class PluginTest(TestCase):
         rss_feed.save()
         handler = get_handler.return_value
         entry = Mock()
-        entry.published_parsed = time.localtime()
+        entry.published = 'Tue, 12 Jun 2012 10:43:57 -0400'
         entry.link = 'http://uniquisimo.com'
         handler.update.return_value = [entry]
         plugin = RSSPlugin(feed=self.feed)
@@ -64,7 +62,7 @@ class PluginTest(TestCase):
         rss_feed.save()
         handler = get_handler.return_value
         entry = Mock()
-        entry.published_parsed = time.localtime()
+        entry.published = 'Tue, 12 Jun 2012 10:43:57 -0400'
         entry.link = 'http://uniquisimo.com'
         handler.update.return_value = [entry]
         plugin = RSSPlugin(feed=self.feed)
@@ -85,7 +83,7 @@ class PluginTest(TestCase):
     def test_include_entry_included(self):
         plugin = RSSPlugin(feed=self.feed)
         entry = Mock()
-        entry.published_parsed = time.localtime()
+        entry.published =  'Tue, 12 Jun 2012 10:43:57 -0400'
         entry.link = 'http://uniquisimo.com'
         self.feed.items.create(published=now(), link=entry.link)
 
@@ -96,7 +94,7 @@ class PluginTest(TestCase):
     def test_include_entry_more_entries(self):
         plugin = RSSPlugin(feed=self.feed)
         entry = Mock()
-        entry.published_parsed = time.localtime()
+        entry.published = 'Tue, 12 Jun 2012 10:43:57 -0400'
         entry.link = 'http://uniquisimo.com'
         self.feed.items.create(published=now(), link='http://witoi.com')
 
@@ -108,7 +106,7 @@ class PluginTest(TestCase):
         plugin = RSSPlugin(feed=self.feed)
         entry = Mock()
         entry.link = 'http://uniquisimo.com'
-        entry.published_parsed = time.localtime()
+        entry.published = 'Tue, 12 Jun 2012 10:43:57 -0400'
 
         result = plugin.include_entry(entry)
 
@@ -117,7 +115,7 @@ class PluginTest(TestCase):
     def assert_compare_entry_item(self, entry, item, title):
         self.assertEqual(unicode(entry.summary), item.content)
         self.assertEqual(unicode(title), item.author)
-        published = datetime.fromtimestamp(time.mktime(entry.published_parsed))
+        published = dateutil.parser.parse(entry.published)
         self.assertEqual(published, item.published)
         self.assertEqual(unicode(entry.link), item.link)
 

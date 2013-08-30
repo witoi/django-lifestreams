@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
+import pytz
 import tweepy
 
 from lifestreams.plugins import BasePlugin
@@ -43,7 +44,7 @@ class TwitterPlugin(BasePlugin):
         link = 'https://twitter.com/%s/status/%s' % (tweet.author.screen_name, tweet.id)
         item = self.feed.items.create(content=tweet.text,
                                       author=tweet.author.screen_name,
-                                      published=tweet.created_at,
+                                      published=pytz.UTC.localize(tweet.created_at),
                                       link=link)
         itemtweet = ItemTweet(item=item, tweet_id=tweet.id)
         itemtweet.save()

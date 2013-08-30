@@ -13,6 +13,7 @@ if not settings.configured:
                 'NAME': ':memory:',
             }
         },
+        USE_TZ=True,
         INSTALLED_APPS=(
             'django.contrib.contenttypes',
             'django.contrib.auth',

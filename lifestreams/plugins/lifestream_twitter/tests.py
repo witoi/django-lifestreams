@@ -1,7 +1,9 @@
-from django.test import TestCase
-from django.test.utils import override_settings
-from django.utils.timezone import now
+from datetime import datetime
 
+from django.test import TestCase
+from django.utils.timezone import is_aware
+
+import pytz
 from mock import patch, Mock
 
 from lifestreams.models import Feed, Lifestream
@@ -92,7 +94,7 @@ class PluginTest(TestCase):
     @patch('lifestreams.plugins.lifestream_twitter.plugin.TweetsHandler')
     def test_update_item_created(self, TweetsHandler):
         tweet = Mock()
-        tweet.created_at = now()
+        tweet.created_at = datetime.now()
         tweets = [tweet]
         handler = TweetsHandler.return_value
         handler.update.return_value = tweets
@@ -107,9 +109,9 @@ class PluginTest(TestCase):
     @patch('lifestreams.plugins.lifestream_twitter.plugin.TweetsHandler')
     def test_update_items_created(self, TweetsHandler):
         tweet1 = Mock()
-        tweet1.created_at = now()
+        tweet1.created_at = datetime.now()
         tweet2 = Mock()
-        tweet2.created_at = now()
+        tweet2.created_at = datetime.now()
         tweets = [tweet1, tweet2]
         handler = TweetsHandler.return_value
         handler.update.return_value = tweets
@@ -126,12 +128,12 @@ class PluginTest(TestCase):
     @patch('lifestreams.plugins.lifestream_twitter.plugin.TweetsHandler')
     def test_update_items_created_with_already_created(self, TweetsHandler):
         tweet1 = Mock()
-        tweet1.created_at = now()
+        tweet1.created_at = datetime.now()
         handler = TweetsHandler.return_value
         plugin = TwitterPlugin(feed=self.feed)
         plugin.create_item(tweet1)
         tweet2 = Mock()
-        tweet2.created_at = now()
+        tweet2.created_at = datetime.now()
         handler.update.return_value = [tweet2]
 
         plugin.update()
@@ -140,10 +142,12 @@ class PluginTest(TestCase):
     def assert_compare_tweet_item(self, tweet, item):
         self.assertEqual(unicode(tweet.text), item.content)
         self.assertEqual(unicode(tweet.author.screen_name), item.author)
-        self.assertEqual(tweet.created_at, item.published)
+        published = pytz.UTC.localize(tweet.created_at)
+        self.assertEqual(published, item.published)
         self.assertEqual(unicode(tweet.id), item.tweet.tweet_id)
         link = 'https://twitter.com/%s/status/%s' % (tweet.author.screen_name, tweet.id)
         self.assertEqual(link, item.link)
+        self.assertTrue(is_aware(item.published))
 
 
 class TweetsHandlerTest(TestCase):

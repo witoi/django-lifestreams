@@ -44,7 +44,7 @@ class Feed(models.Model):
             return plugin.update()
 
     def __unicode__(self):
-        return self.title
+        return "%s - %s" % (self.lifestream.name, self.title)
 
 
 class Item(models.Model):

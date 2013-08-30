@@ -1,5 +1,4 @@
-import time
-from datetime import datetime
+import dateutil.parser
 
 from lifestreams.plugins import BasePlugin
 from lifestreams.exceptions import FeedNotConfiguredException, FeedErrorException
@@ -37,7 +36,7 @@ class RSSPlugin(BasePlugin):
 
     def create_item(self, entry):
         if self.include_entry(entry):
-            published = datetime.fromtimestamp(time.mktime(entry.published_parsed))
+            published = dateutil.parser.parse(entry.published)
             self.feed.items.create(published=published,
                                    content=entry.summary,
                                    author=self.handler.title,

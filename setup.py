@@ -29,6 +29,8 @@ setup (
     ],
     install_requires = [
       'Django>=1.4',
+      'pytz==2013b',
+      'python-dateutil>=2.1'
     ],
     tests_require = [
       'mock>=1.0.1',

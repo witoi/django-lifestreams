@@ -16,9 +16,12 @@ Add plugins to INSTALLED_APPS, and LIFESTREAMS_PLUGIN_CHOICES
 Included plugins
 ----------------
 
-- *Twitter*: `lifestreams.plugins.lifestream_twitter`
+- *Twitter*: `lifestreams.plugins.lifestream_twitter` 
+    * Must install tweepy
 - *Instagram*: `lifestreams.plugins.instagram`
+    * Must install python-instagram
 - *RSS*: `lifestreams.plugins.rss`
+    * Must install feedparser
   
 LIFESTREAMS_PLUGIN_CHOICES example
 ----------------------------------

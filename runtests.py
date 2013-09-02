@@ -28,10 +28,6 @@ if not settings.configured:
             'version': 1,
             'disable_existing_loggers': True,
             'handlers': {
-                'null': {
-                    'level': 'DEBUG',
-                    'class': 'logging.NullHandler'
-                },
                 'console':{
                     'level': 'DEBUG',
                     'class': 'logging.StreamHandler'
@@ -39,7 +35,7 @@ if not settings.configured:
             },
             'loggers': {
                 '.': {
-                    'handlers': [os.getenv('LIFESTREAMS_LOGGER_HANDLER', 'null')],
+                    'handlers': ['console'],
                     'propagate': True,
                     'level': 'DEBUG',
                 }

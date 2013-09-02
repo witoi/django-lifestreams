@@ -3,9 +3,9 @@ python:
   - "2.6"
   - "2.7"
 env:
+  - LIFESTREAMS_LOGGER_HANDLER=console
   - DJANGO_VERSION=1.4.6
   - DJANGO_VERSION=1.5.2
-  - LIFESTREAMS_LOGGER_HANDLER=console
 install:
   - pip install Django==$DJANGO_VERSION
 script:

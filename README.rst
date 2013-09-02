@@ -2,6 +2,11 @@
 django-lifestreams
 ==================
 
+.. image:: https://travis-ci.org/witoi/django-lifestreams.png
+   :target: https://travis-ci.org/witoi/django-lifestreams
+   :alt: Build status
+
+
 **django-lifestreams** is a lifestream application for django. Based on django-lifestream, it allows
 you to create a lifestream on your site from any source you want.
 
@@ -17,11 +22,11 @@ Included plugins
 ----------------
 
 - *Twitter*: `lifestreams.plugins.lifestream_twitter` 
-    * Must install tweepy
+    * Must install tweepy>=2.1
 - *Instagram*: `lifestreams.plugins.instagram`
-    * Must install python-instagram
+    * Must install python-instagram>=0.8.0
 - *RSS*: `lifestreams.plugins.rss`
-    * Must install feedparser
+    * Must install feedparser>=5.0 & python-dateutil>=2.1
   
 LIFESTREAMS_PLUGIN_CHOICES example
 ----------------------------------

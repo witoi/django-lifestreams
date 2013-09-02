@@ -38,7 +38,7 @@ if not settings.configured:
                 }
             },
             'loggers': {
-                '': {
+                '.': {
                     'handlers': [os.getenv('LIFESTREAMS_LOGGER_HANDLER', 'null')],
                     'propagate': True,
                     'level': 'DEBUG',
@@ -54,7 +54,7 @@ def runtests():
     failfast = os.getenv('FAILFAST', 'False') == 'True'
     interactive = os.getenv('INTERACTIVE', 'True') == 'True'
     TestRunner = get_runner(settings)
-    test_runner = TestRunner(verbosity=1, interactive=interactive, failfast=failfast)
+    test_runner = TestRunner(verbosity=3, interactive=interactive, failfast=failfast)
     failures = test_runner.run_tests(['lifestreams', 'lifestream_twitter',
                                       'lifestream_instagram', 'lifestream_rss'])
     sys.exit(failures)

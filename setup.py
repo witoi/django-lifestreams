@@ -29,14 +29,13 @@ setup (
     ],
     install_requires = [
       'Django>=1.4',
-      'pytz==2013b',
-      'python-dateutil>=2.1'
-    ],
+      'pytz>=2013b'    ],
     tests_require = [
       'mock>=1.0.1',
       'tweepy>=2.1',
       'python-instagram>=0.8.0',
-      'feedparser>=5.0'
+      'feedparser>=5.0',
+      'python-dateutil>=2.1'
     ],
     packages=find_packages(),
     test_suite='runtests.runtests',

@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django.test import TestCase
-from django.utils.timezone import is_aware
+from django.utils.timezone import is_aware, now
 
 import pytz
 from mock import patch, Mock
@@ -84,9 +84,9 @@ class PluginTest(TestCase):
         access_token = 'access_token'
         instagram_feed = InstagramFeed(feed=self.feed, access_token=access_token)
         instagram_feed.save()
-        item1 = self.feed.items.create(content='a', author='a', published=datetime.now())
+        item1 = self.feed.items.create(content='a', author='a', published=now())
         ItemMedia.objects.create(item=item1, instagram_id='1')
-        item2 = self.feed.items.create(content='b', author='a', published=datetime.now())
+        item2 = self.feed.items.create(content='b', author='a', published=now())
         ItemMedia.objects.create(item=item2, instagram_id='2')
         plugin = InstagramPlugin(feed=self.feed)
 

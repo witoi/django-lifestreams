@@ -5,9 +5,10 @@ from django.utils.timezone import is_aware
 
 import pytz
 from mock import patch, Mock
+from instagram import InstagramAPIError, InstagramClientError
 
 from lifestreams.models import Lifestream, Feed, Item
-from lifestreams.exceptions import FeedNotConfiguredException
+from lifestreams.exceptions import FeedNotConfiguredException, FeedErrorException
 
 from .plugin import InstagramPlugin, InstagramHandler
 from .models import InstagramFeed, ItemMedia
@@ -136,3 +137,26 @@ class InstagramHandlerTest(TestCase):
 
         api.user_recent_media.assert_called_once_with(min_id=1)
         self.assertEqual(api.user_recent_media.return_value[0], result)
+
+    @patch('instagram.client.InstagramAPI')
+    def test_update_with_api_error(self, InstagramAPI):
+        handler = InstagramHandler(access_token=self.access_token)
+        api = InstagramAPI.return_value
+        api.user_recent_media.return_value = (Mock(), Mock())
+        api.user_recent_media.side_effect = InstagramAPIError(400, 'error_type', 'error_message')
+
+        self.assertRaises(FeedErrorException, handler.update)
+
+        api.user_recent_media.assert_called_once_with()
+
+    
+    @patch('instagram.client.InstagramAPI')
+    def test_update_with_client_error(self, InstagramAPI):
+        handler = InstagramHandler(access_token=self.access_token)
+        api = InstagramAPI.return_value
+        api.user_recent_media.return_value = (Mock(), Mock())
+        api.user_recent_media.side_effect = InstagramClientError('client_error_message')
+
+        self.assertRaises(FeedErrorException, handler.update)
+
+        api.user_recent_media.assert_called_once_with()

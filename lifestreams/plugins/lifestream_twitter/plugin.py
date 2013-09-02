@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
@@ -5,12 +7,13 @@ import pytz
 import tweepy
 
 from lifestreams.plugins import BasePlugin
-from lifestreams.exceptions import FeedNotConfiguredException
+from lifestreams.exceptions import FeedNotConfiguredException, FeedErrorException
 
 from .models import ItemTweet, TwitterFeed
 
 __all__ = ['TwitterPlugin', 'TweetsHandler']
 
+logger = logging.getLogger(__name__)
 
 APP_NAME = __name__[0:__name__.rfind('.')]
 
@@ -28,8 +31,12 @@ class TweetsHandler(object):
         self.screen_name = screen_name
 
     def update(self, *args, **kwargs):
-        kwargs.update({'screen_name': self.screen_name})
-        return self.api.user_timeline(*args, **kwargs)
+        try:
+            kwargs.update({'screen_name': self.screen_name})
+            return self.api.user_timeline(*args, **kwargs)
+        except tweepy.TweepError, e:
+            logger.warn('TweepError, %s', e.reason)
+            raise FeedErrorException()
 
 
 class TwitterPlugin(BasePlugin):

@@ -1,16 +1,19 @@
+import logging
+
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
 import pytz
-from instagram import client
+from instagram import client, InstagramAPIError, InstagramClientError
 
 from lifestreams.plugins import BasePlugin
-from lifestreams.exceptions import FeedNotConfiguredException
+from lifestreams.exceptions import FeedNotConfiguredException, FeedErrorException
 
 from .models import InstagramFeed, ItemMedia
 
 __all__ = ['InstagramPlugin', 'InstagramHandler']
 
+logger = logging.getLogger(__name__)
 
 APP_NAME = __name__[0:__name__.rfind('.')]
 
@@ -23,8 +26,15 @@ class InstagramHandler(object):
         self.api = client.InstagramAPI(access_token=access_token)
 
     def update(self, **kwargs):
-        media, next = self.api.user_recent_media(**kwargs)
-        return media
+        try:
+            media, next = self.api.user_recent_media(**kwargs)
+            return media
+        except InstagramAPIError, e:
+            logger.warn("InstagramAPIError, %s-%s", e.error_type, e.error_message)
+            raise FeedErrorException()
+        except InstagramClientError, e:
+            logger.warn("InstagramClientError, %s", e.error_message)
+            raise FeedErrorException()
 
 
 class InstagramPlugin(BasePlugin):

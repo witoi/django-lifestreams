@@ -5,9 +5,10 @@ from django.utils.timezone import is_aware
 
 import pytz
 from mock import patch, Mock
+from tweepy import TweepError
 
 from lifestreams.models import Feed, Lifestream
-from lifestreams.exceptions import FeedNotConfiguredException
+from lifestreams.exceptions import FeedNotConfiguredException, FeedErrorException
 
 from .plugin import TwitterPlugin, TweetsHandler
 from .models import TwitterFeed
@@ -194,3 +195,15 @@ class TweetsHandlerTest(TestCase):
 
         api.user_timeline.assert_called_once_with(screen_name=self.screen_name, since_id=1)
         self.assertEqual(api.user_timeline.return_value, result)
+
+    @patch('tweepy.API')
+    def test_update_error(self, API):
+        handler = TweetsHandler(consumer_key=self.consumer_key, consumer_secret=self.consumer_secret,
+                                access_token=self.access_token, access_token_secret=self.access_token_secret,
+                                screen_name=self.screen_name)
+        api = API.return_value
+        api.user_timeline.side_effect = TweepError('reason')
+
+        self.assertRaises(FeedErrorException, handler.update)
+
+        api.user_timeline.assert_called_once_with(screen_name=self.screen_name)

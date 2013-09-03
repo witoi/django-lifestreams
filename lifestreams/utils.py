@@ -8,6 +8,7 @@ DEFAULT_SETTINGS = {
     )
 }
 
+
 def get_setting(name, default=None):
     if hasattr(settings, name):
         return getattr(settings, name, default)
@@ -18,6 +19,8 @@ def split_class_name(plugin):
     """
     >>> split_class_name('lifestreams.plugins.twitter.TwitterPlugin')
     ('lifestreams.plugins.twitter', 'TwitterPlugin')
+    >>> split_class_name('lifestreams')
+    ('lifestreams', '')
     """
     try:
         dot = plugin.rindex('.')

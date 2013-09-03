@@ -1,16 +1,29 @@
-import dateutil.parser
+import logging
+
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 
 from lifestreams.plugins import BasePlugin
 from lifestreams.exceptions import FeedNotConfiguredException, FeedErrorException
 
 import feedparser
+import dateutil.parser
 
 from .models import RSSFeed
 
 __all__ = ['RSSHandler', 'RSSPlugin']
 
+logger = logging.getLogger(__name__)
+
+APP_NAME = __name__[0:__name__.rfind('.')]
+
+if APP_NAME not in settings.INSTALLED_APPS:  # pragma: no cover
+    raise ImproperlyConfigured(
+        "For Lifestreams RSS plugin you must append %s to INSTALLED_APPS" % APP_NAME)
+
 
 class RSSHandler(object):
+
     def __init__(self, url):
         self.url = url
 
@@ -27,6 +40,7 @@ class RSSHandler(object):
 
 
 class RSSPlugin(BasePlugin):
+
     def get_handler(self):
         try:
             self.rss_feed = self.feed.rss

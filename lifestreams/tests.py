@@ -67,7 +67,6 @@ class BasePluginTest(TestCase):
 
         self.assertEqual(self.feed, plugin.feed)
 
-
     @patch('lifestreams.plugins.BasePlugin.get_update_kwargs')
     @patch('lifestreams.plugins.BasePlugin.create_item')
     @patch('lifestreams.plugins.BasePlugin.get_handler')
@@ -234,7 +233,6 @@ class UpdateLifestreamsCommandTest(TestCase):
         DummyPlugin.return_value.update.assert_called_once_with()
         BasePlugin.return_value.update.assert_called_once_with()
 
-
     @patch('lifestreams.plugins.BasePlugin')
     @patch('lifestreams.tests.DummyPlugin')
     def test_two_feeds_two_lifestreams(self, DummyPlugin, BasePlugin):
@@ -251,8 +249,6 @@ class UpdateLifestreamsCommandTest(TestCase):
 
         DummyPlugin.return_value.update.assert_called_once_with()
         self.assertFalse(BasePlugin.called)
-
-
 
 
 class DummyPlugin(BasePlugin):

@@ -10,7 +10,7 @@ class TwitterFeed(models.Model):
     access_token = models.CharField(max_length=100)
     access_token_secret = models.CharField(max_length=100)
 
-    def  __unicode__(self):
+    def __unicode__(self):
         return unicode(self.feed)
 
 
@@ -19,5 +19,5 @@ class ItemTweet(models.Model):
 
     tweet_id = models.CharField(max_length=100)
 
-    def  __unicode__(self):
+    def __unicode__(self):
         return unicode(self.item)

@@ -17,11 +17,13 @@ logger = logging.getLogger(__name__)
 
 APP_NAME = __name__[0:__name__.rfind('.')]
 
-if APP_NAME not in settings.INSTALLED_APPS:
-    raise ImproperlyConfigured("For Lifestreams Instagram plugin you must append %s to INSTALLED_APPS" % APP_NAME)
+if APP_NAME not in settings.INSTALLED_APPS:  # pragma: no cover
+    raise ImproperlyConfigured(
+        "For Lifestreams Instagram plugin you must append %s to INSTALLED_APPS" % APP_NAME)
 
 
 class InstagramHandler(object):
+
     def __init__(self, access_token):
         self.api = client.InstagramAPI(access_token=access_token)
 
@@ -30,7 +32,8 @@ class InstagramHandler(object):
             media, next = self.api.user_recent_media(**kwargs)
             return media
         except InstagramAPIError, e:
-            logger.warn("InstagramAPIError, %s-%s", e.error_type, e.error_message)
+            logger.warn(
+                "InstagramAPIError, %s-%s", e.error_type, e.error_message)
             raise FeedErrorException()
         except InstagramClientError, e:
             logger.warn("InstagramClientError, %s", e.error_message)
@@ -38,8 +41,10 @@ class InstagramHandler(object):
 
 
 class InstagramPlugin(BasePlugin):
+
     '''
     '''
+
     def get_handler(self):
         try:
             instagram = self.feed.instagram
@@ -48,12 +53,15 @@ class InstagramPlugin(BasePlugin):
             raise FeedNotConfiguredException
 
     def create_item(self, media):
-        item = self.feed.items.create(published=pytz.UTC.localize(media.created_time),
-                                      content=media.get_standard_resolution_url(),
-                                      author=media.user.username,
-                                      link=media.link)
+        item = self.feed.items.create(
+            published=pytz.UTC.localize(media.created_time),
+            content=media.get_standard_resolution_url(
+            ),
+            author=media.user.username,
+            link=media.link)
         caption = media.caption and media.caption.text or ''
-        ItemMedia.objects.create(item=item, instagram_id=media.id, caption=caption)
+        ItemMedia.objects.create(
+            item=item, instagram_id=media.id, caption=caption)
 
     def get_update_kwargs(self):
         try:

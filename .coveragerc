@@ -1,5 +1,6 @@
 [run]
 source = lifestreams
+omit = */admin*
 
 [report]
 # Regexes for lines to exclude from consideration

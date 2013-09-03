@@ -6,6 +6,9 @@ django-lifestreams
    :target: https://travis-ci.org/witoi/django-lifestreams
    :alt: Build status
 
+.. image:: https://coveralls.io/repos/witoi/django-lifestreams/badge.png?branch=master
+   :target: https://coveralls.io/r/witoi/django-lifestreams?branch=master
+   :alt: Coverage Status
 
 **django-lifestreams** is a lifestream application for django. Based on django-lifestream, it allows
 you to create a lifestream on your site from any source you want.

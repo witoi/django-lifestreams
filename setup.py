@@ -2,6 +2,7 @@
 import os
 from setuptools import setup, find_packages
 
+
 def read_file(filename):
     """Read a file into a string"""
     path = os.path.abspath(os.path.dirname(__file__))
@@ -11,11 +12,13 @@ def read_file(filename):
     except IOError:
         return ''
 
+long_description = read_file('README.rst').strip().split('split here', 1)[0]
 
 setup (
     name='django-lifestreams',
-    version='0.1',
+    version=__import__('lifestreams').__version__,
     description=' '.join(__import__('lifestreams').__doc__.splitlines()).strip(),
+    long_description=long_description,
     author='Pedro Buron',
     author_email='pedro@witoi.com',
     url='http://github.com/witoi/django-lifestreams',

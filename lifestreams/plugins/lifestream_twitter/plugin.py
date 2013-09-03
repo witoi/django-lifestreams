@@ -7,6 +7,7 @@ import pytz
 import tweepy
 
 from lifestreams.plugins import BasePlugin
+from lifestreams.utils import get_setting
 from lifestreams.exceptions import FeedNotConfiguredException, FeedErrorException
 
 from .models import ItemTweet, TwitterFeed
@@ -24,7 +25,9 @@ if APP_NAME not in settings.INSTALLED_APPS:  # pragma: no cover
 
 class TweetsHandler(object):
 
-    def __init__(self, consumer_key, consumer_secret, access_token, access_token_secret, screen_name):
+    def __init__(self, access_token, access_token_secret, screen_name):
+        consumer_key = get_setting('TWITTER_CONSUMER_KEY')
+        consumer_secret = get_setting('TWITTER_CONSUMER_SECRET')
         auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
         auth.set_access_token(access_token, access_token_secret)
         self.api = tweepy.API(auth)
@@ -63,8 +66,6 @@ class TwitterPlugin(BasePlugin):
     def get_handler_kwargs(self):
         try:
             return {
-                'consumer_key': self.feed.twitter.consumer_key,
-                'consumer_secret': self.feed.twitter.consumer_secret,
                 'access_token': self.feed.twitter.access_token,
                 'access_token_secret': self.feed.twitter.access_token_secret,
                 'screen_name': self.feed.twitter.screen_name

@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.test import TestCase
+from django.test.utils import override_settings
 from django.utils.timezone import is_aware
 
 import pytz
@@ -14,10 +15,9 @@ from .plugin import TwitterPlugin, TweetsHandler
 from .models import TwitterFeed
 
 
+
 class PluginTest(TestCase):
     def setUp(self):
-        self.consumer_key = 'a'
-        self.consumer_secret = 'b'
         self.access_token = 'c'
         self.access_token_secret = 'd'
         self.plugin = 'lifestreams.plugins.lifestream_twitter.plugin.TwitterPlugin'
@@ -26,8 +26,6 @@ class PluginTest(TestCase):
         self.feed.save()
         self.twitter_feed = TwitterFeed(feed=self.feed,
                                         screen_name='uniquisimo',
-                                        consumer_key=self.consumer_key,
-                                        consumer_secret=self.consumer_secret,
                                         access_token=self.access_token,
                                         access_token_secret=self.access_token_secret)
         self.twitter_feed.save()
@@ -37,9 +35,7 @@ class PluginTest(TestCase):
         
         TwitterPlugin(feed=self.feed)
         
-        TweetsHandler.assert_called_once_with(consumer_key=self.consumer_key,
-                                              consumer_secret=self.consumer_secret,
-                                              access_token=self.access_token,
+        TweetsHandler.assert_called_once_with(access_token=self.access_token,
                                               access_token_secret=self.access_token_secret,
                                               screen_name=self.twitter_feed.screen_name)
 
@@ -61,17 +57,13 @@ class PluginTest(TestCase):
         feed = Feed(title=self.plugin, feed_plugin=self.plugin, lifestream=self.lifestream)
         feed.save()
         twitter_feed = TwitterFeed(feed=feed, screen_name=screen_name,
-                                   consumer_key=consumer_key,
-                                   consumer_secret=consumer_secret,
                                    access_token=access_token,
                                    access_token_secret=access_token_secret)
         twitter_feed.save()
 
         TwitterPlugin(feed=feed)
         
-        TweetsHandler.assert_called_once_with(consumer_key=consumer_key,
-                                              consumer_secret=consumer_secret,
-                                              access_token=access_token,
+        TweetsHandler.assert_called_once_with(access_token=access_token,
                                               access_token_secret=access_token_secret,
                                               screen_name=screen_name)
 
@@ -151,10 +143,12 @@ class PluginTest(TestCase):
         self.assertTrue(is_aware(item.published))
 
 
+@override_settings(TWITTER_CONSUMER_KEY='TWITTER_CONSUMER_KEY')
+@override_settings(TWITTER_CONSUMER_SECRET='TWITTER_CONSUMER_SECRET')
 class TweetsHandlerTest(TestCase):
     def setUp(self):
-        self.consumer_key = 'a'
-        self.consumer_secret = 'b'
+        self.consumer_key = 'TWITTER_CONSUMER_KEY'
+        self.consumer_secret = 'TWITTER_CONSUMER_SECRET'
         self.access_token = 'c'
         self.access_token_secret = 'd'
         self.screen_name = 'pedro_witoi'
@@ -164,18 +158,30 @@ class TweetsHandlerTest(TestCase):
     def test_intialize(self, API, OAuthHandler):
         auth = OAuthHandler.return_value
 
-        TweetsHandler(consumer_key=self.consumer_key, consumer_secret=self.consumer_secret,
-                      access_token=self.access_token, access_token_secret=self.access_token_secret,
+        TweetsHandler(access_token=self.access_token, access_token_secret=self.access_token_secret,
                       screen_name=self.screen_name)
 
         OAuthHandler.assert_called_once_with(self.consumer_key, self.consumer_secret)
         auth.set_access_token.assert_called_once_with(self.access_token, self.access_token_secret)
         API.assert_called_once_with(auth)
 
+    @patch('tweepy.OAuthHandler')
+    @patch('tweepy.API')
+    @override_settings(TWITTER_CONSUMER_KEY='a')
+    @override_settings(TWITTER_CONSUMER_SECRET='b')
+    def test_intialize_different_settings(self, API, OAuthHandler):
+        auth = OAuthHandler.return_value
+
+        TweetsHandler(access_token=self.access_token, access_token_secret=self.access_token_secret,
+                      screen_name=self.screen_name)
+
+        OAuthHandler.assert_called_once_with('a', 'b')
+        auth.set_access_token.assert_called_once_with(self.access_token, self.access_token_secret)
+        API.assert_called_once_with(auth)
+
     @patch('tweepy.API')
     def test_update(self, API):
-        handler = TweetsHandler(consumer_key=self.consumer_key, consumer_secret=self.consumer_secret,
-                                access_token=self.access_token, access_token_secret=self.access_token_secret,
+        handler = TweetsHandler(access_token=self.access_token, access_token_secret=self.access_token_secret,
                                 screen_name=self.screen_name)
         api = API.return_value
 
@@ -186,8 +192,7 @@ class TweetsHandlerTest(TestCase):
 
     @patch('tweepy.API')
     def test_update_since_id(self, API):
-        handler = TweetsHandler(consumer_key=self.consumer_key, consumer_secret=self.consumer_secret,
-                                access_token=self.access_token, access_token_secret=self.access_token_secret,
+        handler = TweetsHandler(access_token=self.access_token, access_token_secret=self.access_token_secret,
                                 screen_name=self.screen_name)
         api = API.return_value
 
@@ -198,8 +203,7 @@ class TweetsHandlerTest(TestCase):
 
     @patch('tweepy.API')
     def test_update_error(self, API):
-        handler = TweetsHandler(consumer_key=self.consumer_key, consumer_secret=self.consumer_secret,
-                                access_token=self.access_token, access_token_secret=self.access_token_secret,
+        handler = TweetsHandler(access_token=self.access_token, access_token_secret=self.access_token_secret,
                                 screen_name=self.screen_name)
         api = API.return_value
         api.user_timeline.side_effect = TweepError('reason')

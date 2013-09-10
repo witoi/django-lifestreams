@@ -61,3 +61,6 @@ class RSSPlugin(BasePlugin):
 
     def include_entry(self, entry):
         return not self.feed.items.filter(link=entry.link).exists()
+
+    def get_template_name(self):
+        return 'lifestreams/rss/item.html'

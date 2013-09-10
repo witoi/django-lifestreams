@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.conf import settings
 from django.core.management import call_command
 from django.utils.timezone import now
+from django.template import Template, Context
 
 from mock import patch, Mock
 
@@ -78,6 +79,84 @@ class LifestreamModelTest(TestCase):
         result = lifestream1.get_items()
 
         self.assertQuerysetEqual(result, map(repr, items))
+
+
+class LifestreamTagsTest(TestCase):
+    def setUp(self):
+        lifestream = Lifestream.objects.create(name='lifestream')
+        feed = Feed.objects.create(lifestream=lifestream, title='feed', feed_plugin='lifestreams.plugins.BasePlugin')
+        self.item = Item.objects.create(feed=feed, published=now())
+
+    def test_load(self):
+        template = "{% load lifestream_tags %}"
+
+        Template(template).render(Context())
+
+    @patch('lifestreams.models.Item.render')
+    def test_lifestream_render(self, render):
+        template = "{% load lifestream_tags %}" \
+                   "{% lifestream_render item %}"
+        context = Context()
+        context.update({'item': self.item})
+        expected = unicode(render.return_value)
+
+        result = Template(template).render(context)
+
+        self.assertEqual(expected, result)
+        render.assert_called_once_with()
+
+    @patch('lifestreams.models.Item.render')
+    def test_lifestream_render_custom_template(self, render):
+        template = "{% load lifestream_tags %}" \
+                   "{% lifestream_render item template_suffix='suffix/' %}"
+        context = Context()
+        context.update({'item': self.item})
+        expected = unicode(render.return_value)
+
+        result = Template(template).render(context)
+
+        self.assertEqual(expected, result)
+        render.assert_called_once_with('suffix/')
+
+
+class ItemModelTest(TestCase):
+    @patch('lifestreams.plugins.BasePlugin')
+    @patch('lifestreams.models.Feed.get_plugin')
+    @patch('django.template.loader.render_to_string')
+    def test_render_without_suffix(self, render_to_string, get_plugin, BasePlugin):
+        lifestream = Lifestream.objects.create(name='lifestream')
+        feed = Feed.objects.create(lifestream=lifestream, title='feed', feed_plugin='lifestreams.plugins.BasePlugin')
+        item = Item.objects.create(feed=feed, published=now())
+        plugin = BasePlugin.return_value
+        get_plugin.return_value = plugin
+        template_name = unicode(plugin.get_template_name.return_value)
+
+        result = item.render()
+
+        self.assertEqual(render_to_string.return_value, result)
+        render_to_string.assert_called_once_with(template_name, {'item': item})
+        get_plugin.assert_called_once_with()
+
+
+    @patch('lifestreams.plugins.BasePlugin')
+    @patch('lifestreams.models.Feed.get_plugin')
+    @patch('django.template.loader.render_to_string')
+    def test_render_with_suffix(self, render_to_string, get_plugin, BasePlugin):
+        lifestream = Lifestream.objects.create(name='lifestream')
+        feed = Feed.objects.create(lifestream=lifestream, title='feed', feed_plugin='lifestreams.plugins.BasePlugin')
+        item = Item.objects.create(feed=feed, published=now())
+        plugin = BasePlugin.return_value
+        get_plugin.return_value = plugin
+        suffix = 'suffix/'
+        template_name = 'template/template_name.html' 
+        plugin.get_template_name.return_value = template_name
+        expected_template_name = '%stemplate/template_name.html' % suffix
+        
+        result = item.render(suffix)
+
+        self.assertEqual(render_to_string.return_value, result)
+        render_to_string.assert_called_once_with(expected_template_name, {'item': item})
+        get_plugin.assert_called_once_with()
 
 
 class FeedModelTest(TestCase): 
@@ -184,6 +263,11 @@ class BasePluginTest(TestCase):
         plugin = BasePlugin(feed=self.feed)
 
         self.assertRaises(NotImplementedError, plugin.get_update_kwargs)
+
+    def test_not_implemented_get_template_name_kwargs(self):
+        plugin = BasePlugin(feed=self.feed)
+
+        self.assertRaises(NotImplementedError, plugin.get_template_name)
 
 
 class UpdateLifestreamsCommandTest(TestCase):
@@ -316,4 +400,6 @@ def suite():
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(BasePluginTest))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(UpdateLifestreamsCommandTest))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(LifestreamModelTest))
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(LifestreamTagsTest))
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(ItemModelTest))
     return suite

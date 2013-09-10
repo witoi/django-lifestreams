@@ -17,3 +17,6 @@ class BasePlugin(object):
 
     def get_update_kwargs(self):
         raise NotImplementedError("Subclassing BasePlugin must implement get_update_kwargs method.")
+
+    def get_template_name(self):
+        raise NotImplementedError("Subclassing BasePlugin must implement get_template_name method.")        

@@ -82,3 +82,6 @@ class TwitterPlugin(BasePlugin):
             return last_item.tweet.tweet_id
         except self.feed.items.model.DoesNotExist:
             pass
+
+    def get_template_name(self):
+        return 'lifestreams/twitter/item.html'

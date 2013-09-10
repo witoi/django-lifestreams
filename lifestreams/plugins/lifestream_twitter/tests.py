@@ -146,6 +146,14 @@ class PluginTest(TestCase):
         self.assertEqual(link, item.link)
         self.assertTrue(is_aware(item.published))
 
+    def test_get_template_name(self):
+        feed = Mock()
+        plugin = TwitterPlugin(feed=feed)
+
+        result = plugin.get_template_name()
+
+        self.assertEqual('lifestreams/twitter/item.html', result)
+
 
 @override_settings(TWITTER_CONSUMER_KEY='TWITTER_CONSUMER_KEY')
 @override_settings(TWITTER_CONSUMER_SECRET='TWITTER_CONSUMER_SECRET')

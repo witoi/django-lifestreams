@@ -105,6 +105,13 @@ class PluginTest(TestCase):
         self.assertEqual(unicode(media.link), item.link)
         self.assertTrue(is_aware(item.published))
 
+    def test_get_template_name(self):
+        feed = Mock()
+        plugin = InstagramPlugin(feed=feed)
+
+        result = plugin.get_template_name()
+
+        self.assertEqual('lifestreams/instagram/item.html', result)
 
 class InstagramHandlerTest(TestCase):
     def setUp(self):

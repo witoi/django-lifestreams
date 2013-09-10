@@ -69,3 +69,6 @@ class InstagramPlugin(BasePlugin):
         except self.feed.items.model.DoesNotExist:
             return {}
         return {'min_id': item.instagram.instagram_id}
+
+    def get_template_name(self):
+        return 'lifestreams/instagram/item.html'

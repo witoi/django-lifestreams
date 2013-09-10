@@ -20,6 +20,7 @@ class Lifestream(models.Model):
         return self.name
 
 
+
 class Feed(models.Model):
     '''
     '''
@@ -70,3 +71,10 @@ class Item(models.Model):
 
     def __unicode__(self):
         return "%s %s" % (self.author, self.published)
+
+    def render(self, suffix=''):
+        from django.template.loader import render_to_string
+        plugin = self.feed.get_plugin()
+        default_template_name = plugin.get_template_name()
+        template_name = '%s%s' % (suffix, default_template_name)
+        return render_to_string(template_name, {'item': self})

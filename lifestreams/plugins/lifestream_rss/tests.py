@@ -119,6 +119,13 @@ class PluginTest(TestCase):
         self.assertEqual(published, item.published)
         self.assertEqual(unicode(entry.link), item.link)
 
+    def test_get_template_name(self):
+        feed = Mock()
+        plugin = RSSPlugin(feed=feed)
+
+        result = plugin.get_template_name()
+
+        self.assertEqual('lifestreams/rss/item.html', result)
 
 class RSSHandlerTest(TestCase):
     def setUp(self):

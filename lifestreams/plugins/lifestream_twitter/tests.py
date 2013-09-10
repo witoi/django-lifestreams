@@ -32,9 +32,10 @@ class PluginTest(TestCase):
     
     @patch('lifestreams.plugins.lifestream_twitter.plugin.TweetsHandler')
     def test_handler_called(self, TweetsHandler):
-        
-        TwitterPlugin(feed=self.feed)
-        
+        handler = TweetsHandler.return_value
+        plugin = TwitterPlugin(feed=self.feed)
+
+        self.assertEqual(handler, plugin.get_handler())
         TweetsHandler.assert_called_once_with(access_token=self.access_token,
                                               access_token_secret=self.access_token_secret,
                                               screen_name=self.twitter_feed.screen_name)
@@ -60,8 +61,9 @@ class PluginTest(TestCase):
                                    access_token=access_token,
                                    access_token_secret=access_token_secret)
         twitter_feed.save()
+        plugin = TwitterPlugin(feed=feed)
 
-        TwitterPlugin(feed=feed)
+        plugin.get_handler()
         
         TweetsHandler.assert_called_once_with(access_token=access_token,
                                               access_token_secret=access_token_secret,
@@ -70,7 +72,9 @@ class PluginTest(TestCase):
     @patch('lifestreams.plugins.lifestream_twitter.plugin.TweetsHandler')
     @patch('lifestreams.plugins.lifestream_twitter.plugin.TwitterPlugin.get_handler_kwargs')
     def test_get_handler_kwargs_called(self, get_handler_kwargs, TweetsHandler):
-        TwitterPlugin(feed=self.feed)
+        plugin = TwitterPlugin(feed=self.feed)
+
+        plugin.get_handler()
         
         get_handler_kwargs.assert_called_once_with()
 

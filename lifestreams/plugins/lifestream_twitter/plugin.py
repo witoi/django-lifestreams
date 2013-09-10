@@ -44,11 +44,6 @@ class TweetsHandler(object):
 
 class TwitterPlugin(BasePlugin):
 
-    def __init__(self, feed):
-        super(TwitterPlugin, self).__init__(feed=feed)
-        kwargs = self.get_handler_kwargs()
-        self.handler = TweetsHandler(**kwargs)
-
     def create_item(self, tweet):
         link = 'https://twitter.com/%s/status/%s' % (
             tweet.author.screen_name, tweet.id)
@@ -61,7 +56,7 @@ class TwitterPlugin(BasePlugin):
         itemtweet.save()
 
     def get_handler(self):
-        return self.handler
+        return TweetsHandler(**self.get_handler_kwargs())
 
     def get_handler_kwargs(self):
         try:

@@ -9,6 +9,9 @@ class Lifestream(models.Model):
     '''
     name = models.CharField(_('Name'), max_length=100, unique=True)
 
+    def get_items(self):
+        return Item.objects.filter(feed__lifestream=self)
+
     class Meta:
         verbose_name = _('Lifestream')
         verbose_name_plural = _('Lifestreams')

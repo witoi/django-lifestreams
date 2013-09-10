@@ -4,11 +4,12 @@ import unittest
 from django.test import TestCase
 from django.conf import settings
 from django.core.management import call_command
+from django.utils.timezone import now
 
 from mock import patch, Mock
 
 from .utils import get_setting, DEFAULT_SETTINGS
-from .models import Feed, Lifestream
+from .models import Feed, Lifestream, Item
 from .plugins import BasePlugin
 from .exceptions import FeedNotConfiguredException, FeedErrorException
 
@@ -25,6 +26,58 @@ class UtilsTest(TestCase):
     def test_get_existent_setting_on_app(self):
         for key in DEFAULT_SETTINGS.keys():
             self.assertEqual(DEFAULT_SETTINGS[key], get_setting(key))
+
+
+class LifestreamModelTest(TestCase):
+    def test_get_items_one_item(self):
+        lifestream = Lifestream.objects.create(name='lifestream')
+        feed = Feed.objects.create(lifestream=lifestream, title='feed')
+        item = Item.objects.create(feed=feed, published=now())
+        items = [item]
+
+        result = lifestream.get_items()
+
+        self.assertQuerysetEqual(result, map(repr, items))
+
+    def test_get_items_two_item_two_feed(self):
+        lifestream = Lifestream.objects.create(name='lifestream')
+        feed1 = Feed.objects.create(lifestream=lifestream, title='feed1')
+        Item.objects.create(feed=feed1, published=now())
+        feed2 = Feed.objects.create(lifestream=lifestream, title='feed2')
+        Item.objects.create(feed=feed2, published=now())
+        items = Item.objects.all()
+
+        result = lifestream.get_items()
+
+        self.assertQuerysetEqual(result, map(repr, items))
+
+    def test_get_items_two_item_two_feed_two_lifestreams(self):
+        lifestream1 = Lifestream.objects.create(name='lifestream1')
+        feed1 = Feed.objects.create(lifestream=lifestream1, title='feed1')
+        Item.objects.create(feed=feed1, published=now())
+        lifestream2 = Lifestream.objects.create(name='lifestream2')
+        feed2 = Feed.objects.create(lifestream=lifestream2, title='feed2')
+        Item.objects.create(feed=feed2, published=now())
+        items = Item.objects.filter(feed=feed1)
+
+        result = lifestream1.get_items()
+
+        self.assertQuerysetEqual(result, map(repr, items))
+
+    def test_get_items_three_item_three_feed_two_lifestreams(self):
+        lifestream1 = Lifestream.objects.create(name='lifestream1')
+        feed11 = Feed.objects.create(lifestream=lifestream1, title='feed11')
+        Item.objects.create(feed=feed11, published=now())
+        feed12 = Feed.objects.create(lifestream=lifestream1, title='feed12')
+        Item.objects.create(feed=feed12, published=now())
+        lifestream2 = Lifestream.objects.create(name='lifestream2')
+        feed2 = Feed.objects.create(lifestream=lifestream2, title='feed2')
+        Item.objects.create(feed=feed2, published=now())
+        items = Item.objects.filter(feed__lifestream=lifestream1)
+
+        result = lifestream1.get_items()
+
+        self.assertQuerysetEqual(result, map(repr, items))
 
 
 class FeedModelTest(TestCase): 
@@ -262,4 +315,5 @@ def suite():
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(FeedModelTest))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(BasePluginTest))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(UpdateLifestreamsCommandTest))
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(LifestreamModelTest))
     return suite

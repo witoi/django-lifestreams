@@ -32,5 +32,9 @@ nosetests.xml
 # Sublime
 *.sublime-*
 
+# Example Project
 .env
 *.db
+
+# Docs
+docs/_build/

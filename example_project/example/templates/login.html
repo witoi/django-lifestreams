@@ -1,0 +1,13 @@
+<html>
+<head>
+	<title>Login</title>
+</head>
+<body>
+	<h1>Login with a social network</h1>
+	<p>
+	{% for backend in social_auth.not_associated %}
+	<a href="{% url 'socialauth_begin' backend %}">Login with {{ backend }}</a>
+	{% endfor %}
+	</p>
+</body>
+</html>

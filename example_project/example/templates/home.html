@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+	<title>Our Lifestreams</title>
+</head>
+<body>
+<h1>Our Lisfestreams</h1>
+<p>
+	<strong>django-lifestreams (with an S)</strong> example using django-social-auth.
+</p>
+
+<p>
+{% for backend in social_auth.not_associated %}
+<a href="{% url 'socialauth_begin' backend %}">Associate {{ backend }}</a>
+{% endfor %}
+</p>
+
+<p>
+{% for backend in social_auth.associated %}
+  {% if backend.provider == 'twitter' %}
+  <a href="{% url 'create_feed_twitter' %}">Your Twitter Feed</a>
+  {% elif backend.provider == 'instagram' %}
+  <a href="{% url 'create_feed_instagram' %}">Your Instagram Feed</a>
+  {% endif %}
+{% endfor %}
+  <a href="{% url 'create_lifestream' %}">Your Lifestream</a>
+</p>
+
+<h2>Our lifestream</h2>
+<h3>Last 3 items</h3>
+{% for item in items.all|slice:":3" %}
+{{ item.render }}
+{% endfor %}
+
+
+
+</body>
+</html>

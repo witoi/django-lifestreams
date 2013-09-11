@@ -1,0 +1,21 @@
+<html>
+<head>
+    <title>Crear lifestream</title>
+</head>
+<body>
+<h1>{{ lifestream.name }}</h1>
+{% for backend in social_auth.associated %}
+  {% if backend.provider == 'twitter' %}
+  <a href="{% url 'create_feed_twitter' %}">Your Twitter Feed</a>
+  {% elif backend.provider == 'instagram' %}
+  <a href="{% url 'create_feed_instagram' %}">Your Instagram Feed</a>
+  {% endif %}
+{% endfor %}
+
+{% for item in lifestream.items.all|slice:"0:12" %}
+<p>
+  {{ item.render }}
+</p>
+{% endfor %}
+</body>
+</html>

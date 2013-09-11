@@ -1,0 +1,13 @@
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+<h2>Your Instagram Lifestream</h2>
+{% for item in feed.items.all|slice:"0:12" %}
+<p>
+  {{ item.render }}
+</p>
+{% endfor %}
+</body>
+</html>	

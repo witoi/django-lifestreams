@@ -1,0 +1,13 @@
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+<h1>Your Twitter Lifestream</h1>
+{% for item in feed.items.all|slice:"0:12" %}
+<p>
+  {{ item.render }}
+</p>
+{% endfor %}
+</body>
+</html>

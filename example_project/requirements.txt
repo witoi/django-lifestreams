@@ -1,0 +1,15 @@
+Django==1.5.2
+South==0.8.2
+argparse==1.2.1
+dj-database-url==0.2.2
+django-debug-toolbar==0.9.4
+-e git://github.com/witoi/django-lifestreams.git@86618d5718bad0f5b87945a027c08320215ef693#egg=django_lifestreams-dev
+django-social-auth==0.7.28
+ipython==1.0.0
+psycopg2==2.5.1
+python-instagram==0.8.0
+python-openid==2.2.5
+pytz==2013b
+simplejson==3.3.0
+tweepy==2.1
+wsgiref==0.1.2

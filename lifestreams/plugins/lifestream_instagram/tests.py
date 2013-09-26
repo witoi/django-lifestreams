@@ -138,12 +138,12 @@ class InstagramHandlerTest(TestCase):
     def test_update_since_id(self, InstagramAPI):
         handler = InstagramHandler(access_token=self.access_token)
         api = InstagramAPI.return_value
-        api.user_recent_media.return_value = (Mock(), Mock())
+        api.user_recent_media.return_value = ([Mock(), Mock()], Mock())
 
         result = handler.update(min_id=1)
 
         api.user_recent_media.assert_called_once_with(min_id=1)
-        self.assertEqual(api.user_recent_media.return_value[0], result)
+        self.assertEqual(api.user_recent_media.return_value[0][:-1], result)
 
     @patch('instagram.client.InstagramAPI')
     def test_update_with_api_error(self, InstagramAPI):

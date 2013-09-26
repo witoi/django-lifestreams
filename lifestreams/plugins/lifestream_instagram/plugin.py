@@ -30,7 +30,7 @@ class InstagramHandler(object):
     def update(self, **kwargs):
         try:
             media, next = self.api.user_recent_media(**kwargs)
-            return media
+            return media[:-1] if 'min_id' in kwargs else media
         except InstagramAPIError, e:
             logger.warn(
                 "InstagramAPIError, %s-%s", e.error_type, e.error_message)

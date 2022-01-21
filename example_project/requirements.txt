@@ -5,7 +5,7 @@ dj-database-url==0.2.2
 django-debug-toolbar==0.9.4
 -e git://github.com/witoi/django-lifestreams.git@86618d5718bad0f5b87945a027c08320215ef693#egg=django_lifestreams-dev
 django-social-auth==0.7.28
-ipython==1.0.0
+ipython==7.16.3
 psycopg2==2.5.1
 python-instagram==0.8.0
 python-openid==2.2.5
